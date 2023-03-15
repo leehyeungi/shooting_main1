@@ -13,15 +13,6 @@ size = (400, 500)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("슈팅 게임")
 
-# 게임 객체 클래스
-class GameObject(pygame.sprite.Sprite):
-    def __init__(self, image, x, y):
-        super().__init__()
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.centerx = x
-        self.rect.centery = y
-
 #배경화면 클래스
 class Background(Sprite):
     def __init__(self):
@@ -31,7 +22,7 @@ class Background(Sprite):
         self.rect.y = 0
         self.dy = 1
         self.count = 0
-
+        
         Sprite.__init__(self)
 
     def update(self):
@@ -44,14 +35,12 @@ class Background(Sprite):
             self.sprite_image = image_list[1]
             self.count = 0
 
-        
 # 플레이어 클래스
-class Player(GameObject):
-    def __init__(self, image, x, y):
-        super().__init__(image, x, y)
-        self.sprite.image = 'players.png'
-        self.sprite.width = 45
-        self.sprite.height = 40
+class Player(Sprite):
+    def __init__(self):
+        self.sprite_image = 'players.png'
+        self.sprite_width = 45
+        self.sprite_height = 40
         self.sprite_columns = 10
         self.fps = 32
         self.speed = 5
@@ -82,19 +71,14 @@ class Player(GameObject):
         elif self.rect.bottom > 500:
             self.rect.bottom = 500
 
-    def shoot(self):
-        # 총알 객체 생성
-        bullets_group.add(bullets)
-
 # 적 클래스
 class Enemy(Sprite):
-    def __init__(self, image, x, y):
-        super().__init__(image, x, y)
-        self.sprite.image = 'enemys.png'
-        self.sprite.width = 92
-        self.sprite.height = 50
-        self.sprite.columns = 10
-        self.speed = random.randint(1, 5)
+    def __init__(self):
+        self.sprite_image = 'enemys.png'
+        self.sprite_width = 92
+        self.sprite_height = 50
+        self.sprite_columns = 10
+        self.speed = random.randint(1, 5) #스피드 랜덤
 
     def update(self):
         self.rect.y += self.speed
@@ -104,12 +88,10 @@ class Enemy(Sprite):
 # 총알 클래스
 class Bullet(Sprite):
     def __init__(self):
-        super().__init__()
-        self.sprite.image = 'stone.png'
+        self.sprite_image = 'stone.png'
         self.sprite_width = 8
         self.sprite_height = 8
         self.sprite_columns = 4
-        self.rect = self.image.get_rect()
         self.speed = -10
 
     def update(self):
@@ -124,27 +106,23 @@ background = Background()
 background_group = pygame.sprite.Group()
 background_group.add(background)
 
-players = Player()
-players_group = pygame.sprite.Group()
-players_group.add(players)
+player = Player()
+player_group = pygame.sprite.Group()
+player_group.add(player)
 
-bullets = Bullet()
-bullets.rect.y = -10
-bullets_group = pygame.sprite.Group()
-bullets_group.add(bullets)
+bullet = Bullet()
+bullet_group = pygame.sprite.Group()
+bullet_group.add(bullet)
 
-enemys = Enemy()
-enemys_group = pygame.sprite.Group()
-enemys_group.add(enemy)
+enemy = Enemy()
+enemy_group = pygame.sprite.Group()
+enemy_group.add(enemy)
 
 
-# 게임 객체 생성
-player = Player(players, 300, 700)
-
-# 적 생성
+#적 생성
 for i in range(10):
-    enemy = Enemy(enemy_img, random.randint(0, 400), random.randint(-500, -100))
-    enemys_group.add(enemys)
+    random = enemy_group(random.randint(0, 400), random.randint(-500, -100))
+    enemy_group.add(random)
 
 # 게임 루프
 running = True
@@ -160,24 +138,28 @@ while running:
                 player.shoot()
 
     # 게임 상태 업데이트
-    all_sprites.update()
+    player_group.update()
+    bullet_group.update()
+    enemy_group.update()
 
     # 충돌 처리
-    hits = pygame.sprite.groupcollide(enemies, bullets, True, True)
+    hits = pygame.sprite.groupcollide(enemy, bullet, True, True)
     for hit in hits:
         player.score += 10
-        enemy = Enemy(enemy_img, random.randint(0, 500), random.randint(-500, -100))
-        enemies.add(enemy)
-        all_sprites.add(enemy)
+        enemy = Enemy(enemy_group, random.randint(0, 500), random.randint(-500, -100))
+        enemy_group.add(enemy)
 
-    hits = pygame.sprite.spritecollide(player, enemies, False)
+    hits = pygame.sprite.spritecollide(player, enemy, False)
+    
     if hits:
         running = False
 
     # 화면 그리기
     background_group.update()
     background_group.draw(screen)
-    all_sprites.draw(screen)
+    player_group.draw(screen)
+    bullet_group.draw(screen)
+    enemy_group.draw(screen)
 
     # 점수 출력
     font = pygame.font.Font(None, 30)
@@ -191,3 +173,4 @@ while running:
     clock.tick(60)
 
 pygame.quit()
+
