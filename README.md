@@ -1,9 +1,11 @@
 # shooting_main1
 import pygame
 import random
+
 from pygame import draw
 from pygame.color import Color
 from pygame.sprite import Sprite
+from pygame.surface import Surface
 
 pygame.init()
 
@@ -36,8 +38,9 @@ class Background(Sprite):
             self.count = 0
 
 # 플레이어 클래스
-class Player(Sprite):
+class Player(pygame.sprite.Sprite):
     def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
         self.sprite_image = 'players.png'
         self.sprite_width = 45
         self.sprite_height = 40
@@ -45,9 +48,8 @@ class Player(Sprite):
         self.fps = 32
         self.speed = 5
         self.score = 0
-
-    def update(self):
-        self.image.set_colorkey(Color(255, 255, 255))
+        self.image = Surface((self.sprite_width, self.sprite_height))
+        self.rect = self.image.get_rect()
 
     def update(self):
         # 키 입력 처리
@@ -60,25 +62,28 @@ class Player(Sprite):
             self.rect.y -= self.speed
         elif keys[pygame.K_DOWN]:
             self.rect.y += self.speed
-
+        
         # 화면을 벗어나지 않도록 위치 조정
-        if self.rect.left < 0:
-            self.rect.left = 0
-        elif self.rect.right > 400:
-            self.rect.right = 400
-        if self.rect.top < 0:
-            self.rect.top = 0
-        elif self.rect.bottom > 500:
-            self.rect.bottom = 500
+        if self.rect.x < 0:
+            self.rect.x = 0
+        elif self.rect.x > 400:
+            self.rect.x = 400
+        if self.rect.y < 0:
+            self.rect.y = 0
+        elif self.rect.y > 500:
+            self.rect.y = 500
 
 # 적 클래스
-class Enemy(Sprite):
+class Enemy(pygame.sprite.Sprite):
     def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
         self.sprite_image = 'enemys.png'
         self.sprite_width = 92
         self.sprite_height = 50
         self.sprite_columns = 10
         self.speed = random.randint(1, 5) #스피드 랜덤
+        self.image = Surface((self.sprite_width, self.sprite_height))
+        self.rect = self.image.get_rect()
 
     def update(self):
         self.rect.y += self.speed
@@ -86,17 +91,18 @@ class Enemy(Sprite):
             self.rect.y = 0
 
 # 총알 클래스
-class Bullet(Sprite):
+class Bullet(pygame.sprite.Sprite):
     def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
         self.sprite_image = 'stone.png'
         self.sprite_width = 8
         self.sprite_height = 8
         self.sprite_columns = 4
         self.speed = -10
+        self.image = Surface((self.sprite_width, self.sprite_height))
+        self.rect = self.image.get_rect()
 
     def update(self):
-        self.image.set_colorkey(Color(255, 0, 255))
-        
         self.rect.y += self.speed
         if self.rect.bottom < 0:
             self.kill()
@@ -118,11 +124,9 @@ enemy = Enemy()
 enemy_group = pygame.sprite.Group()
 enemy_group.add(enemy)
 
-
 #적 생성
 for i in range(10):
-    random = enemy_group(random.randint(0, 400), random.randint(-500, -100))
-    enemy_group.add(random)
+    a = 0
 
 # 게임 루프
 running = True
@@ -149,7 +153,7 @@ while running:
         enemy = Enemy(enemy_group, random.randint(0, 500), random.randint(-500, -100))
         enemy_group.add(enemy)
 
-    hits = pygame.sprite.spritecollide(player, enemy, False)
+    hits = pygame.sprite.groupcollide(player, enemy, False)
     
     if hits:
         running = False
@@ -173,4 +177,3 @@ while running:
     clock.tick(60)
 
 pygame.quit()
-
