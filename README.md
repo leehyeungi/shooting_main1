@@ -37,9 +37,12 @@ class Background(Sprite):
             self.sprite_image = image_list[1]
             self.count = 0
 
+#1. shoot을 밖에 만들어서 플레이어 클래스 안에 넣어서 만들기
+#2. 안에 만들으면 shoot를 만들고 self를 써서 만들어줘야 끊기지 않음
+            
 # 플레이어 클래스
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, shoot):
         pygame.sprite.Sprite.__init__(self)
         self.sprite_image = 'players.png'
         self.sprite_width = 45
@@ -72,6 +75,10 @@ class Player(pygame.sprite.Sprite):
             self.rect.y = 0
         elif self.rect.y > 500:
             self.rect.y = 500
+
+    def shoot(self):
+        bullit = Bullit()
+        self.sprite
 
 # 적 클래스
 class Enemy(pygame.sprite.Sprite):
@@ -113,20 +120,25 @@ background_group = pygame.sprite.Group()
 background_group.add(background)
 
 player = Player()
+player.rect.x = 200
+player.rect.y = 450
 player_group = pygame.sprite.Group()
 player_group.add(player)
 
-bullet = Bullet()
-bullet_group = pygame.sprite.Group()
-bullet_group.add(bullet)
+#bullet = Bullet()
+#bullet_group = pygame.sprite.Group()
+#bullet_group.add(bullet)
 
 enemy = Enemy()
+enemy.rect.y = -100
 enemy_group = pygame.sprite.Group()
 enemy_group.add(enemy)
 
 #적 생성
+enemys = []
 for i in range(10):
-    a = 0
+    enemys.append(random.randint(0, 400))
+    enemys.append(random.randint(-500, -100))
 
 # 게임 루프
 running = True
@@ -143,20 +155,15 @@ while running:
 
     # 게임 상태 업데이트
     player_group.update()
-    bullet_group.update()
+    #bullet_group.update()
     enemy_group.update()
 
     # 충돌 처리
-    hits = pygame.sprite.groupcollide(enemy, bullet, True, True)
-    for hit in hits:
-        player.score += 10
-        enemy = Enemy(enemy_group, random.randint(0, 500), random.randint(-500, -100))
-        enemy_group.add(enemy)
-
-    hits = pygame.sprite.groupcollide(player, enemy, False)
-    
-    if hits:
-        running = False
+    if enemy.alive():
+        hits = pygame.sprite.groupcollide(enemy_group, bullet, True, True)
+        if hits:
+            player.score += 10
+            enemy_group.add(enemy)
 
     # 화면 그리기
     background_group.update()
